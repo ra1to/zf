@@ -1,0 +1,9 @@
+alipay:
+  app-id: 9021000140644933
+  seller-id: 2088721043407442
+  gateway-url: https://openapi-sandbox.dl.alipaydev.com/gateway.do
+  merchant-private-key: ali_apiclient_key.pem
+  notify-url: http://www.baidu.com
+  app-cert-path: appPublicCert.crt
+  alipay-cert-path: alipayPublicCert.crt
+  alipay-root-cert-path: alipayRootCert.crt

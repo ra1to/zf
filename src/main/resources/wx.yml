@@ -1,0 +1,9 @@
+wx-pay:
+  mch-id: 1558950191
+  mch-serial-no: 34345964330B66427E0D3D28826C4993C77E631F
+  private-key-path: apiclient_key.pem
+  api-v3-key: UDuLFDcmy5Eb6o0nTNZdu6ek4DDh4K8B
+  appid: wx74862e0dfcf69954
+  domain: https://api.mch.weixin.qq.com
+  notify-domain: https://aacb-119-123-72-5.ngrok-free.app
+  partner-key: T6m9iK73b0kn9g5v426MKfHQH7X8rKwb

@@ -1,0 +1,4 @@
+jwt:
+  key: classpath:/key/jwt.key
+  ttl: 3600
+  header: TOKEN

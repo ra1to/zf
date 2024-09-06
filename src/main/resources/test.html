@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码生成示例</title>
+</head>
+<body>
+<canvas id="qrcode"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+    // 替换为你的 codeUrl
+    const codeUrl = 'weixin://wxpay/bizpayurl?pr=SNNUUTUz1';
+
+    // 生成二维码
+    QRCode.toCanvas(document.getElementById('qrcode'), codeUrl, function (error) {
+        if (error) {
+            console.error('二维码生成失败：', error);
+        } else {
+            console.log('二维码生成成功！');
+        }
+    });
+</script>
+</body>
+</html>

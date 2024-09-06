@@ -1,0 +1,29 @@
+spring:
+  config:
+    import: classpath:wx.yml, classpath:ali.yml, classpath:jwt.yml
+  application:
+    name: zf-demo
+  profiles:
+    active: dev
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+server:
+  port: 8099
+
+springdoc:
+  group-configs:
+    - group: api
+      packages-to-scan:
+        - com.raito.zf_demo.api.controller
+  api-docs:
+    version: openapi_3_1
