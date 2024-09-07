@@ -1,8 +1,8 @@
 package com.raito.zf_demo.infrastructure.factory;
 
-import com.raito.zf_demo.infrastructure.exception.ValidateException;
 import com.raito.zf_demo.infrastructure.util.SpringContextUtils;
 import jakarta.annotation.Nullable;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -20,51 +20,57 @@ import java.util.List;
 public abstract class HandlerFactory {
     protected static final JpaTransactionManager transactionManager = SpringContextUtils.getBean(JpaTransactionManager.class);
 
-    public static Chain create() {
-        return new Chain();
+    public static ChainBuilder<ChainContext> create() {
+        return new ChainBuilder<>(new ChainContext());
+    }
+
+    public static <T extends ChainContext> ChainBuilder<T> create(T context) {
+        return new ChainBuilder<>(context);
     }
 
     @Slf4j
-    public static class Chain {
-        private final LinkedList<Handler> handlers = new LinkedList<>();
-        public Chain executor(Executor executor) {
-            handlers.add(new Handler() {
-                @Override
-                public <T extends ChainContext> void doHandler(T context, HandlerChain chain) {
-                    executor.execute(context);
-                    chain.doHandler(context);
-                }
-            });
+    public static class ChainBuilder<T extends ChainContext> {
+        private final LinkedList<Handler<T>> handlers = new LinkedList<>();
+        @Getter
+        private final T context;
+
+        public ChainBuilder(T context) {
+            this.context = context;
+        }
+
+        public ChainBuilder<T> executor(Executor<T> executor) {
+            handlers.add(new ExecuteHandler<>(executor));
             return this;
         }
-        public Chain validator(DefaultValidator validator) {
+
+        public ChainBuilder<T> addContext(String key, Object value) {
+            context.set(key, value);
+            return this;
+        }
+
+        public ChainBuilder<T> validator(DefaultValidator<T> validator) {
             return validator(validator, null);
         }
-        public Chain validator(DefaultValidator validator, Message message) {
-            handlers.add(new Handler() {
-                @Override
-                public <T extends ChainContext> void doHandler(T context, HandlerChain chain) {
-                    if (validator.validate(context)) {
-                        chain.doHandler(context);
-                    }
-                    if (message != null) {
-                        throw new ValidateException(message.get(context));
-                    }
-                }
-            });
+
+        public ChainBuilder<T> validator(DefaultValidator<T> validator, Message<T> message) {
+            handlers.add(new ValidatorHandler<>(validator, message));
             return this;
         }
-        public void execute() {
-            DefaultHandlerChain chain = new DefaultHandlerChain(handlers);
-            chain.doHandler(new ChainContext());
+
+        public ChainBuilder<T> execute() {
+            DefaultHandlerChain<T> chain = new DefaultHandlerChain<>(handlers);
+            chain.doHandler(context);
+            return this;
         }
-        public void executeTransaction() {
+
+        public ChainBuilder<T> executeTransaction() {
             DefaultTransactionDefinition def = new DefaultTransactionDefinition();
             def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
             TransactionStatus status = HandlerFactory.transactionManager.getTransaction(def);
             try {
-                execute();
+                ChainBuilder<T> execute = execute();
                 HandlerFactory.transactionManager.commit(status);
+                return execute;
             } catch (Exception e) {
                 log.error("executeTransaction error", e);
                 HandlerFactory.transactionManager.rollback(status);
@@ -72,34 +78,38 @@ public abstract class HandlerFactory {
             }
         }
     }
-    @FunctionalInterface
-    public interface Executor {
-        <T extends ChainContext> void execute(T context);
-    }
-    @FunctionalInterface
-    public interface Message {
-        <T extends ChainContext> String get(T context);
-    }
-    @FunctionalInterface
-    public interface DefaultValidator  {
-        <T extends ChainContext> boolean validate(T context);
-    }
-    private static class DefaultHandlerChain implements HandlerChain {
-        private final List<Handler> handlers;
-        @Nullable
-        private Iterator<Handler> iterator;
 
-        public DefaultHandlerChain(List<Handler> handlers) {
+    @FunctionalInterface
+    public interface Executor<T extends ChainContext> {
+        void execute(T context);
+    }
+
+    @FunctionalInterface
+    public interface Message<T extends ChainContext> {
+        String get(T context);
+    }
+
+    @FunctionalInterface
+    public interface DefaultValidator<T extends ChainContext> {
+        boolean validate(T context);
+    }
+
+    private static class DefaultHandlerChain<T extends ChainContext> implements HandlerChain<T> {
+        private final List<Handler<T>> handlers;
+        @Nullable
+        private Iterator<Handler<T>> iterator;
+
+        public DefaultHandlerChain(List<Handler<T>> handlers) {
             this.handlers = handlers;
         }
 
         @Override
-        public <T extends ChainContext> void doHandler(T context) {
+        public void doHandler(T context) {
             if (this.iterator == null) {
                 this.iterator = this.handlers.iterator();
             }
             if (this.iterator.hasNext()) {
-                Handler handler = this.iterator.next();
+                Handler<T> handler = this.iterator.next();
                 handler.doHandler(context, this);
             }
         }

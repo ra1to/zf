@@ -14,8 +14,7 @@ import com.raito.zf_demo.domain.pay.factory.PayBeanFactory;
 import com.raito.zf_demo.domain.pay.service.PayService;
 import com.raito.zf_demo.domain.pay.service.PaymentService;
 import com.raito.zf_demo.infrastructure.exception.ConcurrentException;
-import com.raito.zf_demo.infrastructure.factory.ChainFactory;
-import com.raito.zf_demo.infrastructure.factory.Wrapper;
+import com.raito.zf_demo.infrastructure.factory.HandlerFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -50,18 +49,28 @@ public class PayHandler {
     public String getQRCode(Long productId, String type) {
         PayType payType = PayType.valueOf(type);
         Order order = orderService.createOrder(productId, payType);
-        ChainFactory.create()
-                .validator(() -> order.getCodeUrl() == null)
-                .executor(() -> PayBeanFactory.getBean(type, PayService.class).getQRCode(order))
+//        ChainFactory.create()
+//                .validator(() -> order.getCodeUrl() == null)
+//                .executor(() -> PayBeanFactory.getBean(type, PayService.class).getQRCode(order))
+//                .executeTransaction();
+        HandlerFactory.create()
+                .addContext("order", order)
+                .addContext("service", PayBeanFactory.getBean(type, PayService.class))
+                .validator((context) -> context.get("order", Order.class).getCodeUrl() == null)
+                .executor((context) -> context.get("service", PayService.class).getQRCode(context.get("order", Order.class)))
                 .executeTransaction();
         return order.getCodeUrl();
     }
 
     public String processNotify(JSONObject obj, HttpServletRequest request, HttpServletResponse response, PayType payType) {
         try {
-            ChainFactory.create()
-                    .validator(payType == PayType.WX_PAY ? new WxValidator(obj, request, config.getVerifier()) : null)
-                    .executor(() -> this.processOrder(obj, payType))
+//            ChainFactory.create()
+//                    .validator(payType == PayType.WX_PAY ? new WxValidator(obj, request, config.getVerifier()) : null)
+//                    .executor(() -> this.processOrder(obj, payType))
+//                    .executeTransaction();
+            HandlerFactory.create()
+                    .validator(context -> payType == PayType.WX_PAY ? new WxValidator(obj, request, config.getVerifier()).validate() : false)
+                    .executor(context -> this.processOrder(obj, payType))
                     .executeTransaction();
             return processSuccess(response, payType);
         } catch (Exception e) {
@@ -80,12 +89,23 @@ public class PayHandler {
             Lock lock = locks.get(orderNo, ReentrantLock::new);
             if (lock.tryLock()) {
                 try {
-                    Wrapper<Order> orderWrapper = new Wrapper<>();
-                    ChainFactory.create()
-                            .executor(() -> orderWrapper.setData(orderService.getOrder(orderNo)))
-                            .validator(() -> orderWrapper.getData() != null && orderWrapper.getData().getStatus() == OrderStatus.NOT_PAY)
-                            .executor(() -> orderWrapper.getData().setStatus(OrderStatus.SUCCESS))
-                            .executor(() -> paymentService.createPayment(bean, decrypt, payType))
+//                    ChainFactory.create()
+//                            .executor(() -> orderWrapper.setData(orderService.getOrder(orderNo)))
+//                            .validator(() -> orderWrapper.getData() != null && orderWrapper.getData().getStatus() == OrderStatus.NOT_PAY)
+//                            .executor(() -> orderWrapper.getData().setStatus(OrderStatus.SUCCESS))
+//                            .executor(() -> paymentService.createPayment(bean, decrypt, payType))
+//                            .executeTransaction();
+                    HandlerFactory.create()
+                            .executor(context -> context.set("order", orderService.getOrder(orderNo)))
+                            .validator(context -> {
+                                Order order = context.get("order", Order.class);
+                                if (order != null && order.getStatus() == OrderStatus.NOT_PAY) {
+                                    order.setStatus(OrderStatus.SUCCESS);
+                                    return true;
+                                }
+                                return false;
+                            })
+                            .executor((context) -> paymentService.createPayment(bean, decrypt, payType))
                             .executeTransaction();
                 } finally {
                     lock.unlock();
