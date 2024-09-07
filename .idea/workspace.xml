@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a2ed8f14-b28d-4ac4-b818-cd1f4af6db1e" name="更改" comment="wx支付:&#10;下单与支付初步完成，后续需要做退款模块以及超时处理(主动查询支付接口)" />
+    <list default="true" id="a2ed8f14-b28d-4ac4-b818-cd1f4af6db1e" name="更改" comment="wx支付:&#10;下单与支付初步完成，后续需要做退款模块以及超时处理(主动查询支付接口)">
+      <change afterPath="$PROJECT_DIR$/.idea/repository.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/ChainContext.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/Handler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/HandlerChain.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/HandlerFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/user/handler/UserHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/user/handler/UserHandler.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,9 +24,9 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Enum" />
-        <option value="Interface" />
         <option value="Record" />
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -56,9 +66,11 @@
     "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "D:/imcn/zf-demo",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "E:/IDEA/IdeaProjects/zf/repository",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -158,6 +170,7 @@
       <workItem from="1725617561165" duration="47000" />
       <workItem from="1725617654041" duration="132000" />
       <workItem from="1725617856936" duration="213000" />
+      <workItem from="1725629545625" duration="5654000" />
     </task>
     <task id="LOCAL-00001" summary="wx支付:&#10;下单与支付初步完成，后续需要做退款模块以及超时处理(主动查询支付接口)">
       <option name="closed" value="true" />

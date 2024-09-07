@@ -21,9 +21,10 @@ import org.springframework.stereotype.Service;
 public class UserHandler {
     private final UserService userService;
     private final JwtConfig config;
+
     public Token login(String username, String password) {
-        final Wrapper<User> wrapper = new Wrapper<>();
-        final Wrapper<Token> token = new Wrapper<>();
+        Wrapper<User> wrapper = new Wrapper<>();
+        Wrapper<Token> token = new Wrapper<>();
         ChainFactory.create()
                 .validator(UserValidatorFactory.create(username, password), "用户信息格式不正确")
                 .executor(() -> wrapper.setData(userService.findByUsername(username)))
