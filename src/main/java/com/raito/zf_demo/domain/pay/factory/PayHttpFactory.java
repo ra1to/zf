@@ -14,6 +14,8 @@ import java.util.Map;
  */
 public abstract class PayHttpFactory {
     public abstract HttpPost getQRCode(Order order);
+    public abstract HttpPost getCancel(Order order);
+
 
     public final HttpPost buildHttpPost(HttpPost httpPost, Map<String, Object> args) {
         String json = JSONUtil.toJsonStr(args);
@@ -29,4 +31,5 @@ public abstract class PayHttpFactory {
         httpGet.setHeader("Accept", "application/json");
         return httpGet;
     }
+
 }

@@ -8,7 +8,6 @@ import com.raito.zf_demo.domain.pay.enums.PayType;
 import com.raito.zf_demo.infrastructure.util.HttpUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,11 +28,7 @@ public class PayController {
 
     private final PayHandler handler;
     @Operation(summary = "二维码支付", parameters = {
-            @Parameter(name = "productId", required = true),
-            @Parameter(name = "type", required = true, description = "支付类型[WX_PAY, ALIPAY]", examples ={
-                    @ExampleObject(value = "WX_PAY"),
-                    @ExampleObject(value = "ALIPAY")
-            })
+            @Parameter(name = "type", required = true, description = "支付类型[WX_PAY, ALIPAY]")
     })
     @GetMapping("/qrcode")
     public Res<String> getQRCode(@RequestParam("productId") Long productId, @RequestParam("type") String type) {
@@ -49,6 +44,12 @@ public class PayController {
         String string = handler.processNotify(obj, request, response, PayType.WX_PAY);
         Thread.sleep(5000);
         return string;
+    }
+
+    @PostMapping("/cancel/{orderNo}")
+    public Res<Void> cancel(@PathVariable("orderNo") String orderNo, @RequestParam("type") String type) {
+        handler.cancelOrder(orderNo, type);
+        return Res.message("关单成功");
     }
 
 }

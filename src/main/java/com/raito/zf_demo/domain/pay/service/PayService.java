@@ -11,4 +11,6 @@ public interface PayService {
     String getQRCode(Order order);
 
     String decrypt(JSONObject obj);
+
+    void closeOrder(Order order);
 }

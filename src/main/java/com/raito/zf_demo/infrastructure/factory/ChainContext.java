@@ -10,18 +10,27 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ChainContext {
     protected volatile ConcurrentHashMap<String, Object> context = new ConcurrentHashMap<>();
+
     @SuppressWarnings("unchecked")
     public <T> T get(String key, Class<T> clazz) {
         Object value = context.get(key);
+        if (value == null) {
+            return null;
+        }
         if (clazz.isInstance(value)) {
             return (T) value;
         }
         throw new NotFoundException("key: " + key + " not found");
     }
+
     public Object get(String key) {
         return context.get(key);
     }
-    public void set(String key, Object value) {
-        context.put(key, value);
+
+    public ChainContext set(String key, Object value) {
+        if(value != null) {
+            context.put(key, value);
+        }
+        return this;
     }
 }

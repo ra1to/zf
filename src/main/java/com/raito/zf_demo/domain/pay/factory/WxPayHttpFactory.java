@@ -29,6 +29,19 @@ public class WxPayHttpFactory extends PayHttpFactory {
         return buildHttpPost(httpPost, args);
     }
 
+    @Override
+    public HttpPost getCancel(Order order) {
+        HttpPost httpPost = new HttpPost(wxPayConfig.getDomain().concat(String.format(WxApi.CLOSE_ORDER_BY_NO.getUrl(), order.getOrderNo())));
+        Map<String, Object> args = buildCancelArgs();
+        return buildHttpPost(httpPost, args);
+    }
+
+    protected final Map<String, Object> buildCancelArgs() {
+        return new HashMap<>(Map.of(
+                "mchid", wxPayConfig.getMchId()
+        ));
+    }
+
     protected final Map<String, Object> buildPayArgs(Order order) {
         Map<String, Object> args = new HashMap<>(Map.of(
                 "appid", wxPayConfig.getAppid(),

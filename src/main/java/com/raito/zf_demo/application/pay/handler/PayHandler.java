@@ -7,14 +7,17 @@ import com.google.common.cache.CacheBuilder;
 import com.raito.zf_demo.application.pay.validator.WxValidator;
 import com.raito.zf_demo.domain.order.entity.Order;
 import com.raito.zf_demo.domain.order.enums.OrderStatus;
+import com.raito.zf_demo.domain.order.repo.OrderRepo;
 import com.raito.zf_demo.domain.order.service.OrderService;
 import com.raito.zf_demo.domain.pay.config.WxPayConfig;
 import com.raito.zf_demo.domain.pay.enums.PayType;
 import com.raito.zf_demo.domain.pay.factory.PayBeanFactory;
 import com.raito.zf_demo.domain.pay.service.PayService;
 import com.raito.zf_demo.domain.pay.service.PaymentService;
+import com.raito.zf_demo.infrastructure.context.LoginContext;
 import com.raito.zf_demo.infrastructure.exception.ConcurrentException;
 import com.raito.zf_demo.infrastructure.factory.HandlerFactory;
+import com.raito.zf_demo.infrastructure.util.EnumUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -39,6 +43,7 @@ public class PayHandler {
     private final WxPayConfig config;
     private final PayService payService;
     private final PaymentService paymentService;
+    private final OrderRepo orderRepo;
     private final static Cache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterAccess(2, TimeUnit.MINUTES)
@@ -49,10 +54,6 @@ public class PayHandler {
     public String getQRCode(Long productId, String type) {
         PayType payType = PayType.valueOf(type);
         Order order = orderService.createOrder(productId, payType);
-//        ChainFactory.create()
-//                .validator(() -> order.getCodeUrl() == null)
-//                .executor(() -> PayBeanFactory.getBean(type, PayService.class).getQRCode(order))
-//                .executeTransaction();
         HandlerFactory.create()
                 .addContext("order", order)
                 .addContext("service", PayBeanFactory.getBean(type, PayService.class))
@@ -62,12 +63,33 @@ public class PayHandler {
         return order.getCodeUrl();
     }
 
+    public void cancelOrder(String orderNo, String type) {
+        PayType payType = EnumUtils.getEnumByName(type, PayType.class);
+        HandlerFactory
+                .create()
+                .validator((ctx) -> payType != null, ctx -> "支付类型不存在!")
+                .validator((ctx) -> {
+                    Order order = orderRepo.findByOrderNoAndStatus(orderNo, OrderStatus.NOT_PAY);
+                    ctx.set("order", order);
+                    return order != null;
+                }, ctx -> "订单不存在或无法关闭!")
+                .validator((ctx) -> Objects.equals(LoginContext.getUserId(), ctx.get("order", Order.class).getUserId()), ctx -> "无法关闭他人订单!")
+                .executor((ctx) -> {
+                    Order order = ctx.get("order", Order.class);
+                    try {
+                        ReentrantLock lock = locks.get(orderNo, ReentrantLock::new);
+                        if(lock.tryLock()) {
+                            PayBeanFactory.getBean(type, PayService.class).closeOrder(order);
+                            order.setStatus(OrderStatus.CANCEL);
+                        }
+                    } catch (ExecutionException e) {
+                        throw new ConcurrentException(e);
+                    }
+                }).executeTransaction();
+    }
+
     public String processNotify(JSONObject obj, HttpServletRequest request, HttpServletResponse response, PayType payType) {
         try {
-//            ChainFactory.create()
-//                    .validator(payType == PayType.WX_PAY ? new WxValidator(obj, request, config.getVerifier()) : null)
-//                    .executor(() -> this.processOrder(obj, payType))
-//                    .executeTransaction();
             HandlerFactory.create()
                     .validator(context -> payType == PayType.WX_PAY ? new WxValidator(obj, request, config.getVerifier()).validate() : false)
                     .executor(context -> this.processOrder(obj, payType))
@@ -89,12 +111,6 @@ public class PayHandler {
             Lock lock = locks.get(orderNo, ReentrantLock::new);
             if (lock.tryLock()) {
                 try {
-//                    ChainFactory.create()
-//                            .executor(() -> orderWrapper.setData(orderService.getOrder(orderNo)))
-//                            .validator(() -> orderWrapper.getData() != null && orderWrapper.getData().getStatus() == OrderStatus.NOT_PAY)
-//                            .executor(() -> orderWrapper.getData().setStatus(OrderStatus.SUCCESS))
-//                            .executor(() -> paymentService.createPayment(bean, decrypt, payType))
-//                            .executeTransaction();
                     HandlerFactory.create()
                             .executor(context -> context.set("order", orderService.getOrder(orderNo)))
                             .validator(context -> {

@@ -16,6 +16,7 @@ public class ValidatorHandler<T extends ChainContext> implements Handler<T> {
     public void doHandler(T context, HandlerChain<T> chain) {
         if (validator.validate(context)) {
             chain.doHandler(context);
+            return;
         }
         if (message != null) {
             throw new ValidateException(message.get(context));

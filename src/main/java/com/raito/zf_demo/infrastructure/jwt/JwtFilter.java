@@ -1,7 +1,9 @@
 package com.raito.zf_demo.infrastructure.jwt;
 
-import com.raito.zf_demo.infrastructure.exception.ValidateException;
-import jakarta.servlet.*;
+import com.raito.zf_demo.api.vo.Res;
+import com.raito.zf_demo.infrastructure.util.JsonUtils;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ public class JwtFilter extends OncePerRequestFilter {
             "/v3/api-docs",
             "/doc.html",
             "/swagger-ui",
-            "/favicon.ico"
+            "/static/favicon.ico"
     };
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
@@ -43,9 +45,11 @@ public class JwtFilter extends OncePerRequestFilter {
             String authToken = token.substring(7);
             if (new JwtValidator(authToken).validate()) {
                 filterChain.doFilter(request, response);
-            } else {
-                throw new ValidateException("JWT校验失败");
+                return;
             }
         }
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(JsonUtils.toJson(Res.fail("token无效")));
     }
 }

@@ -45,7 +45,6 @@ public class JwtValidator implements Validator {
             boolean result = signature.equals(sign);
             if (result) {
                 LoginContext.set(object.get("login", LoginInfo.class));
-                log.info("JWT校验成功");
             }
             return result;
         } catch (NoSuchAlgorithmException | InvalidKeyException | ValidateException e) {

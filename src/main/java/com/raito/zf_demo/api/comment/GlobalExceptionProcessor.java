@@ -1,6 +1,7 @@
 package com.raito.zf_demo.api.comment;
 
 import com.raito.zf_demo.api.vo.Res;
+import com.raito.zf_demo.infrastructure.exception.ExistException;
 import com.raito.zf_demo.infrastructure.exception.NotFoundException;
 import com.raito.zf_demo.infrastructure.exception.RemoteException;
 import com.raito.zf_demo.infrastructure.exception.ValidateException;
@@ -36,6 +37,12 @@ public class GlobalExceptionProcessor {
     @ExceptionHandler(RemoteException.class)
     public Res<Void> remote(RemoteException e) {
         log.error("远程调用异常", e);
+        return Res.fail(500, e.getMessage());
+    }
+
+    @ExceptionHandler(ExistException.class)
+    public Res<String> exist(ExistException e) {
+        log.error("资源已存在", e);
         return Res.fail(500, e.getMessage());
     }
 }

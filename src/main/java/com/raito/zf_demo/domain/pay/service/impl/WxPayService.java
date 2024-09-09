@@ -32,6 +32,7 @@ public class WxPayService implements PayService {
     private final CloseableHttpClient wxPayClient;
     private final WxPayConfig config;
     private volatile AesUtil aesUtil = null;
+
     @Override
     @Transactional
     public String getQRCode(Order order) {
@@ -71,6 +72,21 @@ public class WxPayService implements PayService {
                     ciphertext);
         } catch (Exception e) {
             throw new KeyException(e);
+        }
+    }
+
+    @Override
+    public void closeOrder(Order order) {
+        try (CloseableHttpResponse response = wxPayClient.execute(payHttpFactory.getCancel(order))) {
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode == 204) {
+                log.debug("关单成功");
+            } else {
+                log.error("取消订单失败,响应码 = " + statusCode);
+                throw new IOException("request failed");
+            }
+        } catch (IOException e) {
+            throw new RemoteException("取消订单失败", e);
         }
     }
 

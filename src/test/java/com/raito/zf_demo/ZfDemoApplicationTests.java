@@ -4,7 +4,6 @@ import com.raito.zf_demo.application.pay.handler.PayHandler;
 import com.raito.zf_demo.domain.pay.enums.PayType;
 import com.raito.zf_demo.domain.user.entity.User;
 import com.raito.zf_demo.infrastructure.context.LoginContext;
-import com.raito.zf_demo.infrastructure.factory.ChainFactory;
 import com.raito.zf_demo.infrastructure.jwt.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -26,9 +25,6 @@ class ZfDemoApplicationTests {
     private JwtConfig config;
     @Test
     void contextLoads() {
-        ChainFactory.create()
-                .executor(() -> System.out.println(123))
-                .execute();
         LoginContext.set(new LoginInfo(1L, "raito", "raito@qq.com"));
         String code = handler.getQRCode(1L, PayType.WX_PAY.name());
     }
