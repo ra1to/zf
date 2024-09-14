@@ -101,7 +101,7 @@ public class WxPayService implements PayService {
             String body = EntityUtils.toString(response.getEntity());
             int statusCode = response.getStatusLine().getStatusCode();
             switch (statusCode) {
-                case 200 -> log.info("成功, 返回结果 = " + body);
+                case 200 -> log.info("查单接口调用成功, 返回结果 = " + body);
                 case 204 -> log.info("成功");
                 default -> {
                     log.info("查单接口调用,响应码 = " + statusCode + ",返回结果 = " + body);
@@ -121,8 +121,8 @@ public class WxPayService implements PayService {
             String body = EntityUtils.toString(response.getEntity());
             int statusCode = response.getStatusLine().getStatusCode();
             switch (statusCode) {
-                case 200 -> log.info("成功, 返回结果 = " + body);
-                case 204 -> log.info("成功");
+                case 200 -> log.info("退款成功, 返回结果 = " + body);
+                case 204 -> log.info("退款成功");
                 default -> throw new RemoteException("退款接口调用,响应码 = " + statusCode + ",返回结果 = " + body);
             }
             refund.getOrder().setStatus(OrderStatus.REFUND_PROCESSING);
