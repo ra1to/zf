@@ -57,20 +57,20 @@ public abstract class HandlerFactory {
             return this;
         }
 
-        public ChainBuilder<T> execute() {
+        public T execute() {
             DefaultHandlerChain<T> chain = new DefaultHandlerChain<>(handlers);
             chain.doHandler(context);
-            return this;
+            return context;
         }
 
-        public ChainBuilder<T> executeTransaction() {
+        public T executeTransaction() {
             DefaultTransactionDefinition def = new DefaultTransactionDefinition();
             def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
             TransactionStatus status = HandlerFactory.transactionManager.getTransaction(def);
             try {
-                ChainBuilder<T> execute = execute();
+                execute();
                 HandlerFactory.transactionManager.commit(status);
-                return execute;
+                return context;
             } catch (Exception e) {
                 log.error("executeTransaction error", e);
                 HandlerFactory.transactionManager.rollback(status);

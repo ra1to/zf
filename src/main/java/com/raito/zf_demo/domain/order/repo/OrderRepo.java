@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface OrderRepo extends JpaRepository<Order, Long> {
-    @Query("select o from Order o where o.product.id = :productId and o.payType = :type and o.userId = :userId")
+    @Query("select o from Order o where o.product.id = :productId and o.payType = :type and o.userId = :userId and o.status = 'NOT_PAY'")
     Order findOrder(@Param("productId") Long productId, @Param("type") PayType type, @Param("userId") Long userId);
 
     Order findByOrderNo(String orderNo);

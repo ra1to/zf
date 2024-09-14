@@ -10,10 +10,12 @@ import com.raito.zf_demo.domain.order.enums.OrderStatus;
 import com.raito.zf_demo.domain.order.repo.OrderRepo;
 import com.raito.zf_demo.domain.order.service.OrderService;
 import com.raito.zf_demo.domain.pay.config.WxPayConfig;
+import com.raito.zf_demo.domain.pay.entity.Refund;
 import com.raito.zf_demo.domain.pay.enums.PayType;
 import com.raito.zf_demo.domain.pay.factory.PayBeanFactory;
 import com.raito.zf_demo.domain.pay.service.PayService;
 import com.raito.zf_demo.domain.pay.service.PaymentService;
+import com.raito.zf_demo.domain.pay.service.RefundService;
 import com.raito.zf_demo.infrastructure.context.LoginContext;
 import com.raito.zf_demo.infrastructure.exception.ConcurrentException;
 import com.raito.zf_demo.infrastructure.factory.HandlerFactory;
@@ -41,9 +43,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class PayHandler {
     private final OrderService orderService;
     private final WxPayConfig config;
-    private final PayService payService;
     private final PaymentService paymentService;
     private final OrderRepo orderRepo;
+    private final RefundService refundService;
     private final static Cache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterAccess(2, TimeUnit.MINUTES)
@@ -78,7 +80,7 @@ public class PayHandler {
                     Order order = ctx.get("order", Order.class);
                     try {
                         ReentrantLock lock = locks.get(orderNo, ReentrantLock::new);
-                        if(lock.tryLock()) {
+                        if (lock.tryLock()) {
                             PayBeanFactory.getBean(type, PayService.class).closeOrder(order);
                             order.setStatus(OrderStatus.CANCEL);
                         }
@@ -99,6 +101,22 @@ public class PayHandler {
             log.error("微信支付通知处理失败！", e);
             return processFail(response, payType, e);
         }
+    }
+
+    public String queryOrder(String orderNo) {
+        return HandlerFactory.create()
+                .validator(context -> {
+                    Order order = orderRepo.findByOrderNo(orderNo);
+                    context.set("order", order);
+                    return order != null;
+                }, context -> "订单不存在!")
+                .executor(context -> {
+                    Order order = context.get("order", Order.class);
+                    PayService service = PayBeanFactory.getBean(order.getPayType().name(), PayService.class);
+                    context.set("result", service.queryOrder(order));
+                })
+                .execute()
+                .get("result", String.class);
     }
 
     private void processOrder(JSONObject obj, PayType payType) {
@@ -143,6 +161,23 @@ public class PayHandler {
         response.setStatus(500);
         return JSONUtil.toJsonStr(Response.fail(e));
     }
+
+    public void refund(String orderNo, String reason) {
+        HandlerFactory.create()
+                .validator(context -> {
+                    Order order = orderRepo.findByOrderNo(orderNo);
+                    context.set("order", order);
+                    return order != null;
+                }, context -> "订单不存在!")
+                .executor(context -> {
+                    Order order = context.get("order", Order.class);
+                    context.set("service", PayBeanFactory.getBean(order.getPayType().name(), PayService.class));
+                    context.set("refund", refundService.createRefund(order, reason));
+                })
+                .executor(context -> context.get("service", PayService.class).refund(context.get("refund", Refund.class)))
+                .executeTransaction();
+    }
+
 
     private record Response(String code, String message) {
         public static Response ok() {

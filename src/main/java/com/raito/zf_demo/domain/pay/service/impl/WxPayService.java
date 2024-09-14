@@ -3,9 +3,12 @@ package com.raito.zf_demo.domain.pay.service.impl;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.raito.zf_demo.domain.order.entity.Order;
+import com.raito.zf_demo.domain.order.enums.OrderStatus;
 import com.raito.zf_demo.domain.pay.config.WxPayConfig;
+import com.raito.zf_demo.domain.pay.entity.Refund;
 import com.raito.zf_demo.domain.pay.factory.PayHttpFactory;
 import com.raito.zf_demo.domain.pay.service.PayService;
+import com.raito.zf_demo.domain.pay.service.RefundService;
 import com.raito.zf_demo.infrastructure.exception.KeyException;
 import com.raito.zf_demo.infrastructure.exception.RemoteException;
 import com.wechat.pay.contrib.apache.httpclient.util.AesUtil;
@@ -31,6 +34,7 @@ public class WxPayService implements PayService {
     private final PayHttpFactory payHttpFactory;
     private final CloseableHttpClient wxPayClient;
     private final WxPayConfig config;
+    private final RefundService refundService;
     private volatile AesUtil aesUtil = null;
 
     @Override
@@ -87,6 +91,44 @@ public class WxPayService implements PayService {
             }
         } catch (IOException e) {
             throw new RemoteException("取消订单失败", e);
+        }
+    }
+
+    @Override
+    public String queryOrder(Order order) {
+        log.info("查单接口调用 ===> {}", order.getOrderNo());
+        try (CloseableHttpResponse response = wxPayClient.execute(payHttpFactory.getQryOrder(order))) {
+            String body = EntityUtils.toString(response.getEntity());
+            int statusCode = response.getStatusLine().getStatusCode();
+            switch (statusCode) {
+                case 200 -> log.info("成功, 返回结果 = " + body);
+                case 204 -> log.info("成功");
+                default -> {
+                    log.info("查单接口调用,响应码 = " + statusCode + ",返回结果 = " + body);
+                    throw new IOException("request failed");
+                }
+            }
+            return body;
+        } catch (IOException e) {
+            throw new RemoteException(e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void refund(Refund refund) {
+        try (CloseableHttpResponse response = wxPayClient.execute(payHttpFactory.getRefund(refund))) {
+            String body = EntityUtils.toString(response.getEntity());
+            int statusCode = response.getStatusLine().getStatusCode();
+            switch (statusCode) {
+                case 200 -> log.info("成功, 返回结果 = " + body);
+                case 204 -> log.info("成功");
+                default -> throw new RemoteException("退款接口调用,响应码 = " + statusCode + ",返回结果 = " + body);
+            }
+            refund.getOrder().setStatus(OrderStatus.REFUND_PROCESSING);
+            refundService.updateRefund(refund, body);
+        } catch (Exception e) {
+            throw new RemoteException(e);
         }
     }
 

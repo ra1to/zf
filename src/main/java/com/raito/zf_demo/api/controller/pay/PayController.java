@@ -37,19 +37,30 @@ public class PayController {
 
     @Operation(summary = "微信支付统一回调接口", hidden = true)
     @PostMapping("/wx/notify")
-    public String notify(HttpServletRequest request, HttpServletResponse response) throws InterruptedException {
+    public String notify(HttpServletRequest request, HttpServletResponse response) {
         String body = HttpUtils.read(request);
         JSONObject obj = JSONUtil.parseObj(body);
         log.info("微信支付通知 =======\n{}", body);
-        String string = handler.processNotify(obj, request, response, PayType.WX_PAY);
-        Thread.sleep(5000);
-        return string;
+        return handler.processNotify(obj, request, response, PayType.WX_PAY);
     }
 
     @PostMapping("/cancel/{orderNo}")
+    @Operation(summary = "取消订单")
     public Res<Void> cancel(@PathVariable("orderNo") String orderNo, @RequestParam("type") String type) {
         handler.cancelOrder(orderNo, type);
         return Res.message("关单成功");
     }
 
+    @Operation(summary = "查询订单")
+    @GetMapping("/qry_order/{orderNo}")
+    public Res<String> qryOrder(@PathVariable("orderNo") String orderNo) {
+        return Res.ok(handler.queryOrder(orderNo));
+    }
+
+    @Operation(summary = "申请退款")
+    @PostMapping("/refund/{orderNo}/{reason}")
+    public Res<Void> refund(@PathVariable("orderNo") String orderNo, @PathVariable("reason") String reason) {
+        handler.refund(orderNo, reason);
+        return Res.message("退款成功");
+    }
 }

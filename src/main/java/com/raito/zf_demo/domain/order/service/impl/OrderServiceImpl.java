@@ -44,7 +44,6 @@ public class OrderServiceImpl implements OrderService {
                     orderRepo.save(order);
                 })
                 .execute()
-                .getContext()
                 .get("order", Order.class);
     }
 

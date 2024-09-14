@@ -5,14 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a2ed8f14-b28d-4ac4-b818-cd1f4af6db1e" name="更改" comment="wx支付:&#10;下单与支付初步完成，后续需要做退款模块以及超时处理(主动查询支付接口)">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/ExecuteHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/ValidatorHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/service/RefundService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/service/impl/RefundServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/api/controller/pay/PayController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/api/controller/pay/PayController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/pay/handler/PayHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/pay/handler/PayHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/ChainContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/ChainContext.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/Handler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/Handler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/HandlerChain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/HandlerChain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/user/handler/UserHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/user/handler/UserHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/order/repo/OrderRepo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/order/repo/OrderRepo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/order/service/impl/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/order/service/impl/OrderServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/factory/PayHttpFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/factory/PayHttpFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/factory/WxPayHttpFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/factory/WxPayHttpFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/service/PayService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/service/PayService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/service/impl/WxPayService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/service/impl/WxPayService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/HandlerFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/raito/zf_demo/infrastructure/factory/HandlerFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/test.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/test.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/wx.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/wx.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/api/controller/pay/PayController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/api/controller/pay/PayController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/application/pay/handler/PayHandler$Response.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/application/pay/handler/PayHandler$Response.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/application/pay/handler/PayHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/application/pay/handler/PayHandler.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/application/user/handler/UserHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/application/user/handler/UserHandler.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/order/entity/Order$OrderBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/order/entity/Order$OrderBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/order/entity/Order.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/order/entity/Order.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/order/service/impl/OrderServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/order/service/impl/OrderServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/pay/factory/PayHttpFactory.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/pay/factory/PayHttpFactory.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/pay/factory/WxPayHttpFactory.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/pay/factory/WxPayHttpFactory.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/pay/service/PayService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/pay/service/PayService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/pay/service/impl/WxPayService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/domain/pay/service/impl/WxPayService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/infrastructure/jwt/JwtFilter.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/raito/zf_demo/infrastructure/jwt/JwtFilter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/test.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/test.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/wx.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/wx.yml" afterDir="false" />
+    </list>
+    <list id="82de10fb-70fe-48a9-98b3-5a7f97d897d3" name="忽略" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,7 +94,7 @@
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;E:/IDEA/IdeaProjects/zf/repository&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/zrt/jusheng/fitness-course---back-end&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -93,11 +118,13 @@
       <recent name="com.raito.zf_demo.domain.user.service" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\imcn\zf-demo\src\main\resources" />
       <recent name="D:\imcn\projects\03-源码\最终版源代码\demo\zf-demo\src\main\resources" />
       <recent name="D:\imcn\projects\03-源码\最终版源代码\demo\zf-demo\src\main\java\com\raito\zf_demo\domain\pay\enums" />
       <recent name="D:\imcn\projects\03-源码\最终版源代码\demo\zf-demo" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\imcn\zf-demo\src\main\resources\static" />
       <recent name="D:\imcn\projects\03-源码\最终版源代码\demo\zf-demo\src\main\resources\key" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
@@ -172,6 +199,8 @@
       <workItem from="1725629545625" duration="5759000" />
       <workItem from="1725685977668" duration="1000000" />
       <workItem from="1725704105697" duration="4176000" />
+      <workItem from="1725951031408" duration="3987000" />
+      <workItem from="1726302749022" duration="3905000" />
     </task>
     <task id="LOCAL-00001" summary="wx支付:&#10;下单与支付初步完成，后续需要做退款模块以及超时处理(主动查询支付接口)">
       <option name="closed" value="true" />
@@ -197,7 +226,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725685681478</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="wx支付:&#10;下单与支付初步完成，后续需要做退款模块以及超时处理(主动查询支付接口)">
+      <option name="closed" value="true" />
+      <created>1725870170407</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1725870170407</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -229,7 +266,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="HEAD" />
+                        <option value="origin/master" />
                       </list>
                     </value>
                   </entry>
@@ -253,29 +290,39 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/user/validator/UserValidatorFactory.java</url>
-          <line>16</line>
-          <option name="timeStamp" value="18" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/user/validator/UserValidatorFactory.java</url>
-          <line>17</line>
-          <option name="timeStamp" value="19" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/service/impl/WxPayService.java</url>
-          <line>37</line>
+          <line>42</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/factory/WxPayHttpFactory.java</url>
-          <line>27</line>
+          <line>29</line>
           <option name="timeStamp" value="23" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/raito/zf_demo/domain/pay/factory/WxPayHttpFactory.java</url>
-          <line>39</line>
+          <line>83</line>
           <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/user/validator/UserValidatorFactory.java</url>
+          <line>18</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/raito/zf_demo/api/comment/GlobalExceptionProcessor.java</url>
+          <line>26</line>
+          <option name="timeStamp" value="26" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/pay/handler/PayHandler.java</url>
+          <line>59</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/raito/zf_demo/application/pay/handler/PayHandler.java</url>
+          <line>58</line>
+          <option name="timeStamp" value="30" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

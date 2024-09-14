@@ -28,7 +28,6 @@ public class UserHandler {
                 .validator(context -> context.get("user", User.class).validatePassword(password), context -> "用户名或密码不正确")
                 .executor(context -> context.set("token", new Token(config.getHeader(), JwtUtils.createToken(context.get("user", User.class)))))
                 .execute()
-                .getContext()
                 .get("token", Token.class);
     }
 
@@ -44,7 +43,6 @@ public class UserHandler {
                     context.set("token", new Token(config.getHeader(), JwtUtils.createToken(user)));
                 })
                 .execute()
-                .getContext()
                 .get("token", Token.class);
     }
 }
