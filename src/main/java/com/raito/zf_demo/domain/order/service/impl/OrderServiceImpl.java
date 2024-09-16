@@ -13,6 +13,7 @@ import com.raito.zf_demo.infrastructure.factory.*;
 import com.raito.zf_demo.infrastructure.util.OrderNoUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author raito
@@ -25,6 +26,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepo productRepo;
 
     @Override
+    @Transactional
     public Order createOrder(Long productId, PayType type) {
         ChainContext context = new ChainContext().set("order", orderRepo.findOrder(productId, type, LoginContext.getUserId()));
         Product product = productRepo.findById(productId).orElseThrow(() -> new ValidateException("商品不存在!"));
