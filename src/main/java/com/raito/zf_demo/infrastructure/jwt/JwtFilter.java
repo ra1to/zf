@@ -21,7 +21,8 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtConfig config;
     private final static String[] IGNORE_URLS = {
             "/api/user/login",
-            "/api/pay/wx/notify",
+            "/api/pay/wx/zf/notify",
+            "/api/pay/wx/refunds/notify",
             "/api/user/register",
             "/static",
             "/webjars",

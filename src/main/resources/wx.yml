@@ -5,5 +5,5 @@ wx-pay:
   api-v3-key: UDuLFDcmy5Eb6o0nTNZdu6ek4DDh4K8B
   appid: wx74862e0dfcf69954
   domain: https://api.mch.weixin.qq.com
-  notify-domain: https://5e0d-113-87-130-125.ngrok-free.app
+  notify-domain: https://308b-119-123-74-184.ngrok-free.app
   partner-key: T6m9iK73b0kn9g5v426MKfHQH7X8rKwb

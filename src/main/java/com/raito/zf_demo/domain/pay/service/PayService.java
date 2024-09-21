@@ -18,4 +18,6 @@ public interface PayService {
     String queryOrder(Order order);
 
     void refund(Refund refund);
+
+    String queryRefund(String refundNo);
 }

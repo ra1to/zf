@@ -44,13 +44,8 @@ public class WxPayService implements PayService {
             String body = EntityUtils.toString(response.getEntity());
             int statusCode = response.getStatusLine().getStatusCode();
 
-            switch (statusCode) {
-                case 200 -> log.info("成功, 返回结果 = " + body);
-                case 204 -> log.info("成功");
-                default -> {
-                    log.info("Native下单失败,响应码 = " + statusCode + ",返回结果 = " + body);
-                    throw new RemoteException("Native下单失败,响应码 = " + statusCode + ",返回结果 = " + body);
-                }
+            if (statusCode != 200) {
+                throw new RemoteException("Native下单失败,响应码 = " + statusCode + ",返回结果 = " + body);
             }
             JSONObject result = JSONUtil.parseObj(body);
             String codeUrl = result.get("code_url", String.class);
@@ -83,12 +78,10 @@ public class WxPayService implements PayService {
     public void closeOrder(Order order) {
         try (CloseableHttpResponse response = wxPayClient.execute(payHttpFactory.getCancel(order))) {
             int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode == 204) {
-                log.debug("关单成功");
-            } else {
-                log.error("取消订单失败,响应码 = " + statusCode);
-                throw new IOException("request failed");
+            if (statusCode != 204) {
+                throw new RemoteException("取消订单失败,响应码 = " + statusCode);
             }
+            log.debug("取消订单成功: {}", order.getOrderNo());
         } catch (IOException e) {
             throw new RemoteException("取消订单失败", e);
         }
@@ -100,13 +93,8 @@ public class WxPayService implements PayService {
         try (CloseableHttpResponse response = wxPayClient.execute(payHttpFactory.getQryOrder(order))) {
             String body = EntityUtils.toString(response.getEntity());
             int statusCode = response.getStatusLine().getStatusCode();
-            switch (statusCode) {
-                case 200 -> log.info("查单接口调用成功, 返回结果 = " + body);
-                case 204 -> log.info("成功");
-                default -> {
-                    log.info("查单接口调用,响应码 = " + statusCode + ",返回结果 = " + body);
-                    throw new IOException("request failed");
-                }
+            if (statusCode != 200) {
+                log.error("查单接口调用,响应码 = " + statusCode + ",返回结果 = " + body);
             }
             return body;
         } catch (IOException e) {
@@ -120,14 +108,28 @@ public class WxPayService implements PayService {
         try (CloseableHttpResponse response = wxPayClient.execute(payHttpFactory.getRefund(refund))) {
             String body = EntityUtils.toString(response.getEntity());
             int statusCode = response.getStatusLine().getStatusCode();
-            switch (statusCode) {
-                case 200 -> log.info("退款成功, 返回结果 = " + body);
-                case 204 -> log.info("退款成功");
-                default -> throw new RemoteException("退款接口调用,响应码 = " + statusCode + ",返回结果 = " + body);
+            if (statusCode != 200) {
+                log.error("退款接口调用,响应码 = " + statusCode + ",返回结果 = " + body);
             }
             refund.getOrder().setStatus(OrderStatus.REFUND_PROCESSING);
-            refundService.updateRefund(refund, body);
+            refundService.updateRefund(refund, JSONUtil.toBean(body, JSONObject.class), body);
         } catch (Exception e) {
+            throw new RemoteException(e);
+        }
+    }
+
+    @Override
+    public String queryRefund(String refundNo) {
+        log.info("查询退款接口调用 ===> {}", refundNo);
+        try (CloseableHttpResponse response = wxPayClient.execute(payHttpFactory.getQryRefund(refundNo))) {
+            String body = EntityUtils.toString(response.getEntity());
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                log.error("查单接口调用,响应码 = " + statusCode + ",返回结果 = " + body);
+                throw new RemoteException("request failed");
+            }
+            return body;
+        } catch (IOException e) {
             throw new RemoteException(e);
         }
     }

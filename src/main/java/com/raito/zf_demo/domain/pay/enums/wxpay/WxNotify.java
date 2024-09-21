@@ -14,7 +14,7 @@ public enum WxNotify {
     /**
      * 支付通知
      */
-    NATIVE_NOTIFY("/api/pay/wx/notify"),
+    NATIVE_NOTIFY("/api/pay/wx/zf/notify"),
 
     /**
      * 支付通知
@@ -25,7 +25,7 @@ public enum WxNotify {
     /**
      * 退款结果通知
      */
-    REFUND_NOTIFY("/api/wx-pay/refunds/notify");
+    REFUND_NOTIFY("/api/pay/wx/refunds/notify");
 
     /**
      * 类型

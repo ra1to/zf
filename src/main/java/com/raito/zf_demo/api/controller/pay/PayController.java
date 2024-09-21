@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 public class PayController {
 
     private final PayHandler handler;
+
     @Operation(summary = "二维码支付", parameters = {
             @Parameter(name = "type", required = true, description = "支付类型[WX_PAY, ALIPAY]")
     })
@@ -36,11 +37,11 @@ public class PayController {
     }
 
     @Operation(summary = "微信支付统一回调接口", hidden = true)
-    @PostMapping("/wx/notify")
+    @PostMapping("/wx/zf/notify")
     public String notify(HttpServletRequest request, HttpServletResponse response) {
         String body = HttpUtils.read(request);
         JSONObject obj = JSONUtil.parseObj(body);
-        log.info("微信支付通知 =======\n{}", body);
+        log.debug("微信支付通知 =======\n{}", body);
         return handler.processNotify(obj, request, response, PayType.WX_PAY);
     }
 
@@ -62,5 +63,20 @@ public class PayController {
     public Res<Void> refund(@PathVariable("orderNo") String orderNo, @PathVariable("reason") String reason) {
         handler.refund(orderNo, reason);
         return Res.message("退款成功");
+    }
+
+    @Operation(summary = "查询退款")
+    @GetMapping("/qry_refund/{refundNo}")
+    public Res<String> qryRefund(@PathVariable("refundNo") String refundNo) {
+        return Res.ok("查询退款成功", handler.queryRefund(refundNo));
+    }
+
+    @Operation(summary = "微信退款结果通知回调接口")
+    @PostMapping("/wx/refunds/notify")
+    public String refundsNotify(HttpServletRequest request, HttpServletResponse response) {
+        String body = HttpUtils.read(request);
+        JSONObject obj = JSONUtil.parseObj(body);
+        log.debug("微信退款通知 =======\n{}", body);
+        return handler.processRefundNotify(obj, request, response, PayType.WX_PAY);
     }
 }

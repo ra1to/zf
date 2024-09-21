@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface RefundRepo extends JpaRepository<Refund, Long> {
+    Refund findByRefundNo(String refundNo);
 }

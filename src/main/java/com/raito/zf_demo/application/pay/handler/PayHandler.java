@@ -13,11 +13,13 @@ import com.raito.zf_demo.domain.pay.config.WxPayConfig;
 import com.raito.zf_demo.domain.pay.entity.Refund;
 import com.raito.zf_demo.domain.pay.enums.PayType;
 import com.raito.zf_demo.domain.pay.factory.PayBeanFactory;
+import com.raito.zf_demo.domain.pay.repo.RefundRepo;
 import com.raito.zf_demo.domain.pay.service.PayService;
 import com.raito.zf_demo.domain.pay.service.PaymentService;
 import com.raito.zf_demo.domain.pay.service.RefundService;
 import com.raito.zf_demo.infrastructure.context.LoginContext;
 import com.raito.zf_demo.infrastructure.exception.ConcurrentException;
+import com.raito.zf_demo.infrastructure.factory.ChainContext;
 import com.raito.zf_demo.infrastructure.factory.HandlerFactory;
 import com.raito.zf_demo.infrastructure.util.EnumUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +48,7 @@ public class PayHandler {
     private final PaymentService paymentService;
     private final OrderRepo orderRepo;
     private final RefundService refundService;
+    private final RefundRepo refundRepo;
     private final static Cache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterAccess(2, TimeUnit.MINUTES)
@@ -93,14 +96,58 @@ public class PayHandler {
     public String processNotify(JSONObject obj, HttpServletRequest request, HttpServletResponse response, PayType payType) {
         try {
             HandlerFactory.create()
-                    .validator(context -> payType == PayType.WX_PAY ? new WxValidator(obj, request, config.getVerifier()).validate() : false)
-                    .executor(context -> this.processOrder(obj, payType))
+                    .addContext(obj, request, payType, PayBeanFactory.getBean(payType.name(), PayService.class))
+                    .validator(this::validateSign, ctx -> "通知验签失败!\nrequest_id:" + ctx.get(JSONObject.class).get("id"))
+                    .executor(this::processOrder)
                     .executeTransaction();
             return processSuccess(response, payType);
         } catch (Exception e) {
             log.error("微信支付通知处理失败！", e);
             return processFail(response, payType, e);
         }
+    }
+
+    public String processRefundNotify(JSONObject obj, HttpServletRequest request, HttpServletResponse response, PayType payType) {
+        try {
+            HandlerFactory.create()
+                    .addContext(obj, request, payType, PayBeanFactory.getBean(payType.name(), PayService.class))
+                    .validator(this::validateSign, ctx -> "通知验签失败!\nrequest_id:" + ctx.get(JSONObject.class).get("id"))
+                    .executor(this::processRefundNotify)
+                    .executeTransaction();
+            return processSuccess(response, payType);
+        } catch (Exception e) {
+            log.error("处理退款通知失败");
+            return processFail(response, payType, e);
+        }
+    }
+
+    private void processRefundNotify(ChainContext ctx) {
+        Data data = new Data(ctx);
+        try {
+            Lock lock = locks.get("refund" + data.orderNo, ReentrantLock::new);
+            if (lock.tryLock()) {
+                try {
+                    HandlerFactory.create(ctx)
+                            .validator(context -> {
+                                Order order = orderRepo.findByOrderNo(data.orderNo);
+                                context.set("order", order);
+                                return order != null && order.getStatus() == OrderStatus.REFUND_PROCESSING;
+                            }, context -> "订单异常!")
+                            .executor(context -> {
+                                Order order = context.get(Order.class);
+                                order.setStatus(OrderStatus.REFUND_SUCCESS);
+                                refundService.updateRefund(order.getRefund(), data.bean, data.decrypt);
+                            })
+                            .executeTransaction();
+
+                } finally {
+                    lock.unlock();
+                }
+            }
+        } catch (ExecutionException e) {
+            throw new ConcurrentException(e);
+        }
+
     }
 
     public String queryOrder(String orderNo) {
@@ -119,27 +166,24 @@ public class PayHandler {
                 .get("result", String.class);
     }
 
-    private void processOrder(JSONObject obj, PayType payType) {
-        PayService service = PayBeanFactory.getBean(payType.name(), PayService.class);
-        String decrypt = service.decrypt(obj);
-        log.info("微信支付通知内容：{}", decrypt);
-        JSONObject bean = JSONUtil.toBean(decrypt, JSONObject.class);
-        String orderNo = bean.getStr("out_trade_no");
+    private void processOrder(ChainContext ctx) {
+        Data data = new Data(ctx);
         try {
-            Lock lock = locks.get(orderNo, ReentrantLock::new);
+            Lock lock = locks.get("pay" + data.orderNo, ReentrantLock::new);
             if (lock.tryLock()) {
                 try {
                     HandlerFactory.create()
-                            .executor(context -> context.set("order", orderService.getOrder(orderNo)))
+                            .executor(context -> context.set("order", orderService.getOrder(data.orderNo)))
                             .validator(context -> {
+                                Order order = orderRepo.findByOrderNo(data.orderNo);
+                                context.set("order", order);
+                                return order != null && order.getStatus() == OrderStatus.NOT_PAY;
+                            }, context -> "订单异常!")
+                            .executor(context -> {
                                 Order order = context.get("order", Order.class);
-                                if (order != null && order.getStatus() == OrderStatus.NOT_PAY) {
-                                    order.setStatus(OrderStatus.SUCCESS);
-                                    return true;
-                                }
-                                return false;
+                                order.setStatus(OrderStatus.SUCCESS);
+                                paymentService.createPayment(data.bean, data.decrypt, data.type);
                             })
-                            .executor((context) -> paymentService.createPayment(bean, decrypt, payType))
                             .executeTransaction();
                 } finally {
                     lock.unlock();
@@ -169,6 +213,10 @@ public class PayHandler {
                     context.set("order", order);
                     return order != null;
                 }, context -> "订单不存在!")
+                .validator(ctx -> {
+                    Order order = ctx.get(Order.class);
+                    return Objects.equals(LoginContext.getUserId(), order.getUserId());
+                }, ctx -> "无权操作他人订单!")
                 .executor(context -> {
                     Order order = context.get("order", Order.class);
                     context.set("service", PayBeanFactory.getBean(order.getPayType().name(), PayService.class));
@@ -176,6 +224,32 @@ public class PayHandler {
                 })
                 .executor(context -> context.get("service", PayService.class).refund(context.get("refund", Refund.class)))
                 .executeTransaction();
+    }
+
+    public String queryRefund(String refundNo) {
+        return HandlerFactory.create()
+                .validator(ctx -> {
+                    Refund refund = refundRepo.findByRefundNo(refundNo);
+                    ctx.set("refund", refund);
+                    return refund != null;
+                }, ctx -> "退款单号不存在!")
+                .executor(ctx -> {
+                    Refund refund = ctx.get("refund", Refund.class);
+                    PayService service = PayBeanFactory.getBean(refund.getPayType().name(), PayService.class);
+                    ctx.set("result", service.queryRefund(refundNo));
+                })
+                .executeTransaction()
+                .get("result", String.class);
+    }
+
+    protected final boolean validateSign(ChainContext ctx) {
+        PayType payType = ctx.get(PayType.class);
+        if (payType == PayType.WX_PAY) {
+            return new WxValidator(ctx.get(JSONObject.class), ctx.get(HttpServletRequest.class), config.getVerifier()).validate();
+        } else if (payType == PayType.ALIPAY) {
+            return false;
+        }
+        return false;
     }
 
 
@@ -191,6 +265,26 @@ public class PayHandler {
 
         public static Response fail(String code, String message) {
             return new Response(code, message);
+        }
+    }
+
+    @lombok.Data
+    private static class Data {
+        private PayService service;
+        private JSONObject obj;
+        private String decrypt;
+        private PayType type;
+        private JSONObject bean;
+        private String orderNo;
+
+        public Data(ChainContext ctx) {
+            service = ctx.get(PayService.class);
+            obj = ctx.get(JSONObject.class);
+            decrypt = service.decrypt(obj);
+            type = ctx.get(PayType.class);
+            log.debug("{}退款通知内容:\n{}", type.getDesc(), decrypt);
+            bean = JSONUtil.toBean(decrypt, JSONObject.class);
+            orderNo = bean.getStr("out_trade_no");
         }
     }
 }

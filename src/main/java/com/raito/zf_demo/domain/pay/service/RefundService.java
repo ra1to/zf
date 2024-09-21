@@ -1,5 +1,6 @@
 package com.raito.zf_demo.domain.pay.service;
 
+import cn.hutool.json.JSONObject;
 import com.raito.zf_demo.domain.order.entity.Order;
 import com.raito.zf_demo.domain.pay.entity.Refund;
 
@@ -10,5 +11,5 @@ import com.raito.zf_demo.domain.pay.entity.Refund;
 public interface RefundService {
     Refund createRefund(Order order, String reason);
 
-    void updateRefund(Refund refund, String body);
+    void updateRefund(Refund refund, JSONObject obj, String body);
 }

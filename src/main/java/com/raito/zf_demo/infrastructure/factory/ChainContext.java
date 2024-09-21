@@ -1,7 +1,5 @@
 package com.raito.zf_demo.infrastructure.factory;
 
-import com.raito.zf_demo.infrastructure.exception.NotFoundException;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -11,25 +9,36 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChainContext {
     protected volatile ConcurrentHashMap<String, Object> context = new ConcurrentHashMap<>();
 
-    @SuppressWarnings("unchecked")
     public <T> T get(String key, Class<T> clazz) {
         Object value = context.get(key);
-        if (value == null) {
-            return null;
-        }
         if (clazz.isInstance(value)) {
-            return (T) value;
+            return clazz.cast(value);
         }
-        throw new NotFoundException("key: " + key + " not found");
+        return null;
     }
 
     public Object get(String key) {
-        return context.get(key);
+        try {
+            return context.get(key);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public <T> T get(Class<T> clazz) {
+        return clazz.cast(context.values().stream().filter(clazz::isInstance).findFirst().orElse(null));
     }
 
     public ChainContext set(String key, Object value) {
-        if(value != null) {
+        if (value != null) {
             context.put(key, value);
+        }
+        return this;
+    }
+
+    public ChainContext set(Object value) {
+        if (value != null) {
+            context.put(value.getClass().getName(), value);
         }
         return this;
     }

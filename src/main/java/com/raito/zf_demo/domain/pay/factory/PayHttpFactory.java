@@ -18,6 +18,7 @@ public abstract class PayHttpFactory {
     public abstract HttpPost getCancel(Order order);
     public abstract HttpGet getQryOrder(Order order);
     public abstract HttpPost getRefund(Refund refund);
+    public abstract HttpGet getQryRefund(String refundNo);
 
 
 
@@ -37,5 +38,4 @@ public abstract class PayHttpFactory {
         httpGet.setHeader("Accept", "application/json");
         return httpGet;
     }
-
 }

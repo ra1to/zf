@@ -48,6 +48,13 @@ public abstract class HandlerFactory {
             return this;
         }
 
+        public ChainBuilder<T> addContext(Object... objects) {
+            for (var obj : objects) {
+                context.set(obj);
+            }
+            return this;
+        }
+
         public ChainBuilder<T> validator(DefaultValidator<T> validator) {
             return validator(validator, null);
         }

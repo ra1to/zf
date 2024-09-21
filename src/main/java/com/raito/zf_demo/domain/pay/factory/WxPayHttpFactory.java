@@ -52,6 +52,13 @@ public class WxPayHttpFactory extends PayHttpFactory {
         return buildHttpPost(url, args);
     }
 
+    @Override
+    public HttpGet getQryRefund(String refundNo) {
+        String str = String.format(WxApi.DOMESTIC_REFUNDS_QUERY.getUrl(), refundNo);
+        String url = wxPayConfig.getDomain().concat(str);
+        return buildHttpGet(url);
+    }
+
     protected final Map<String, Object> buildRefundArgs(Refund refund) {
         Map<String, Object> args = new HashMap<>();
         args.put("out_trade_no", refund.getOrder().getOrderNo());//订单编号

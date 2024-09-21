@@ -1,7 +1,6 @@
 package com.raito.zf_demo.domain.pay.service.impl;
 
-import cn.hutool.core.lang.TypeReference;
-import cn.hutool.json.JSONUtil;
+import cn.hutool.json.JSONObject;
 import com.raito.zf_demo.domain.order.entity.Order;
 import com.raito.zf_demo.domain.pay.entity.Refund;
 import com.raito.zf_demo.domain.pay.repo.RefundRepo;
@@ -11,8 +10,6 @@ import com.raito.zf_demo.infrastructure.util.OrderNoUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Map;
 
 /**
  * @author raito
@@ -37,21 +34,19 @@ public class RefundServiceImpl implements RefundService {
 
     @Transactional
     @Override
-    public void updateRefund(Refund refund, String body) {
-        Map<String, Object> args = JSONUtil.toBean(body, new TypeReference<>() {
-        }, false);
+    public void updateRefund(Refund refund, JSONObject obj, String body) {
         String orderNo = refund.getOrder().getOrderNo();
-        if (!orderNo.equals(args.get("out_trade_no").toString())) {
+        if (!orderNo.equals(obj.get("out_trade_no").toString())) {
             throw new RemoteException("订单号不匹配");
         }
 
-        refund.setRefundId(args.get("refund_id").toString());
-        if (args.get("status") != null) {
-            refund.setRefundStatus(args.get("status").toString());
+        refund.setRefundId(obj.get("refund_id").toString());
+        if (obj.get("status") != null) {
+            refund.setRefundStatus(obj.get("status").toString());
             refund.setContentReturn(body);
         }
-        if (args.get("refund_status") != null) {
-            refund.setRefundStatus(args.get("refund_status").toString());
+        if (obj.get("refund_status") != null) {
+            refund.setRefundStatus(obj.get("refund_status").toString());
             refund.setContentNotify(body);
         }
     }
