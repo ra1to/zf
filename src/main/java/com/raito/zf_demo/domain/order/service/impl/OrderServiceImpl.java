@@ -9,11 +9,11 @@ import com.raito.zf_demo.domain.order.service.OrderService;
 import com.raito.zf_demo.domain.pay.enums.PayType;
 import com.raito.zf_demo.infrastructure.context.LoginContext;
 import com.raito.zf_demo.infrastructure.exception.ValidateException;
-import com.raito.zf_demo.infrastructure.factory.*;
+import com.raito.zf_demo.infrastructure.factory.ChainContext;
+import com.raito.zf_demo.infrastructure.factory.HandlerFactory;
 import com.raito.zf_demo.infrastructure.util.OrderNoUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author raito
@@ -26,7 +26,6 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepo productRepo;
 
     @Override
-    @Transactional
     public Order createOrder(Long productId, PayType type) {
         ChainContext context = new ChainContext().set("order", orderRepo.findOrder(productId, type, LoginContext.getUserId()));
         Product product = productRepo.findById(productId).orElseThrow(() -> new ValidateException("商品不存在!"));
@@ -45,7 +44,7 @@ public class OrderServiceImpl implements OrderService {
                     ctx.set("order", order);
                     orderRepo.save(order);
                 })
-                .execute()
+                .executeTransaction()
                 .get("order", Order.class);
     }
 
