@@ -9,22 +9,22 @@ import com.raito.zf_demo.infrastructure.jwt.LoginInfo;
  */
 public class LoginContext {
 
-    private static final ThreadLocal<LoginInfo> loginInfo = new ThreadLocal<>();
+    private static final ThreadLocal<LoginInfo> local = new ThreadLocal<>();
 
     public static LoginInfo get() {
         try {
-            return loginInfo.get();
+            return local.get();
         } catch (Exception e) {
             throw new NotFoundException("请先登录！");
         }
     }
 
     public static void set(LoginInfo info) {
-        loginInfo.set(info);
+        local.set(info);
     }
 
     public static void clear() {
-        loginInfo.remove();
+        local.remove();
     }
 
     public static Long getUserId() {

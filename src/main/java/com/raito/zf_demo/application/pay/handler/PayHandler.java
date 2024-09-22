@@ -2,8 +2,6 @@ package com.raito.zf_demo.application.pay.handler;
 
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.raito.zf_demo.application.pay.validator.WxValidator;
 import com.raito.zf_demo.domain.order.entity.Order;
 import com.raito.zf_demo.domain.order.enums.OrderStatus;
@@ -18,10 +16,10 @@ import com.raito.zf_demo.domain.pay.service.PayService;
 import com.raito.zf_demo.domain.pay.service.PaymentService;
 import com.raito.zf_demo.domain.pay.service.RefundService;
 import com.raito.zf_demo.infrastructure.context.LoginContext;
-import com.raito.zf_demo.infrastructure.exception.ConcurrentException;
 import com.raito.zf_demo.infrastructure.factory.ChainContext;
 import com.raito.zf_demo.infrastructure.factory.HandlerFactory;
 import com.raito.zf_demo.infrastructure.util.EnumUtils;
+import com.raito.zf_demo.infrastructure.util.LockUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author raito
@@ -49,11 +43,6 @@ public class PayHandler {
     private final OrderRepo orderRepo;
     private final RefundService refundService;
     private final RefundRepo refundRepo;
-    private final static Cache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
-            .maximumSize(1000)
-            .expireAfterAccess(2, TimeUnit.MINUTES)
-            .build();
-
 
     @Transactional
     public String getQRCode(Long productId, String type) {
@@ -81,15 +70,10 @@ public class PayHandler {
                 .validator((ctx) -> Objects.equals(LoginContext.getUserId(), ctx.get("order", Order.class).getUserId()), ctx -> "无法关闭他人订单!")
                 .executor((ctx) -> {
                     Order order = ctx.get("order", Order.class);
-                    try {
-                        ReentrantLock lock = locks.get(orderNo, ReentrantLock::new);
-                        if (lock.tryLock()) {
-                            PayBeanFactory.getBean(type, PayService.class).closeOrder(order);
-                            order.setStatus(OrderStatus.CANCEL);
-                        }
-                    } catch (ExecutionException e) {
-                        throw new ConcurrentException(e);
-                    }
+                    LockUtils.tryLock("cancelOrder:" + orderNo, () -> {
+                        PayBeanFactory.getBean(type, PayService.class).closeOrder(order);
+                        order.setStatus(OrderStatus.CANCEL);
+                    });
                 }).executeTransaction();
     }
 
@@ -123,31 +107,18 @@ public class PayHandler {
 
     private void processRefundNotify(ChainContext ctx) {
         Data data = new Data(ctx);
-        try {
-            Lock lock = locks.get("refund" + data.orderNo, ReentrantLock::new);
-            if (lock.tryLock()) {
-                try {
-                    HandlerFactory.create(ctx)
-                            .validator(context -> {
-                                Order order = orderRepo.findByOrderNo(data.orderNo);
-                                context.set("order", order);
-                                return order != null && order.getStatus() == OrderStatus.REFUND_PROCESSING;
-                            }, context -> "订单异常!")
-                            .executor(context -> {
-                                Order order = context.get(Order.class);
-                                order.setStatus(OrderStatus.REFUND_SUCCESS);
-                                refundService.updateRefund(order.getRefund(), data.bean, data.decrypt);
-                            })
-                            .executeTransaction();
-
-                } finally {
-                    lock.unlock();
-                }
-            }
-        } catch (ExecutionException e) {
-            throw new ConcurrentException(e);
-        }
-
+        LockUtils.tryLock("refund:" + data.orderNo, () -> HandlerFactory.create(ctx)
+                .validator(context -> {
+                    Order order = orderRepo.findByOrderNo(data.orderNo);
+                    context.set("order", order);
+                    return order != null && order.getStatus() == OrderStatus.REFUND_PROCESSING;
+                }, context -> "订单异常!")
+                .executor(context -> {
+                    Order order = context.get(Order.class);
+                    order.setStatus(OrderStatus.REFUND_SUCCESS);
+                    refundService.updateRefund(order.getRefund(), data.bean, data.decrypt);
+                })
+                .executeTransaction());
     }
 
     public String queryOrder(String orderNo) {
@@ -168,32 +139,19 @@ public class PayHandler {
 
     private void processOrder(ChainContext ctx) {
         Data data = new Data(ctx);
-        try {
-            Lock lock = locks.get("pay" + data.orderNo, ReentrantLock::new);
-            if (lock.tryLock()) {
-                try {
-                    HandlerFactory.create()
-                            .executor(context -> context.set("order", orderService.getOrder(data.orderNo)))
-                            .validator(context -> {
-                                Order order = orderRepo.findByOrderNo(data.orderNo);
-                                context.set("order", order);
-                                return order != null && order.getStatus() == OrderStatus.NOT_PAY;
-                            }, context -> "订单异常!")
-                            .executor(context -> {
-                                Order order = context.get("order", Order.class);
-                                order.setStatus(OrderStatus.SUCCESS);
-                                paymentService.createPayment(data.bean, data.decrypt, data.type);
-                            })
-                            .executeTransaction();
-                } finally {
-                    lock.unlock();
-                }
-            }
-
-        } catch (ExecutionException e) {
-            throw new ConcurrentException(e);
-        }
-
+        LockUtils.tryLock("pay:" + data.orderNo, () -> HandlerFactory.create()
+                .executor(context -> context.set("order", orderService.getOrder(data.orderNo)))
+                .validator(context -> {
+                    Order order = orderRepo.findByOrderNo(data.orderNo);
+                    context.set("order", order);
+                    return order != null && order.getStatus() == OrderStatus.NOT_PAY;
+                }, context -> "订单异常!")
+                .executor(context -> {
+                    Order order = context.get("order", Order.class);
+                    order.setStatus(OrderStatus.SUCCESS);
+                    paymentService.createPayment(data.bean, data.decrypt, data.type);
+                })
+                .executeTransaction());
     }
 
     private String processSuccess(HttpServletResponse response, PayType payType) {
