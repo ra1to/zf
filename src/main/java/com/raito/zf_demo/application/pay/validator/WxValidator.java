@@ -1,7 +1,7 @@
 package com.raito.zf_demo.application.pay.validator;
 
 import cn.hutool.json.JSONObject;
-import com.raito.zf_demo.infrastructure.Validator;
+import com.raito.zf_demo.infrastructure.validator.Validator;
 import com.raito.zf_demo.infrastructure.exception.ValidateException;
 import com.wechat.pay.contrib.apache.httpclient.auth.Verifier;
 import jakarta.servlet.http.HttpServletRequest;

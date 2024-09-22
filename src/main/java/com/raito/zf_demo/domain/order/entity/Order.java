@@ -26,14 +26,15 @@ public class Order extends BaseEntity {
     private String title;
 
     @Comment("订单号")
-    @Column(name = "order_no", unique = true)
+    @Column(name = "order_no", unique = true, nullable = false)
     private String orderNo;
 
     @Comment("用户id")
+    @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
     @Comment("商品id")
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", nullable = false, unique = true)
     @ManyToOne
     private Product product;
 

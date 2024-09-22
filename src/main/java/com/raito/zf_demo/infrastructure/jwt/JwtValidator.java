@@ -2,7 +2,7 @@ package com.raito.zf_demo.infrastructure.jwt;
 
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.raito.zf_demo.infrastructure.Validator;
+import com.raito.zf_demo.infrastructure.validator.Validator;
 import com.raito.zf_demo.infrastructure.context.LoginContext;
 import com.raito.zf_demo.infrastructure.exception.ValidateException;
 import lombok.RequiredArgsConstructor;

@@ -28,8 +28,7 @@ public class LoginContext {
     }
 
     public static Long getUserId() {
-        LoginInfo login = get();
-        return login == null ? 1 : login.getUserId();
+        return get().getUserId();
     }
 
     public static String getUserName() {

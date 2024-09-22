@@ -1,4 +1,4 @@
-package com.raito.zf_demo.infrastructure;
+package com.raito.zf_demo.infrastructure.validator;
 
 import com.raito.zf_demo.infrastructure.exception.ValidateException;
 
