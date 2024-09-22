@@ -14,7 +14,7 @@ import org.hibernate.annotations.Comment;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
-@Table(name = "t_refunds")
+@Table(name = "zf_refunds")
 @Comment("退款信息")
 @Builder
 @NoArgsConstructor

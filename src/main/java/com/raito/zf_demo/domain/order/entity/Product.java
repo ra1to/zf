@@ -12,7 +12,7 @@ import org.hibernate.annotations.Comment;
  * @since 2024/09/05
  */
 @EqualsAndHashCode(callSuper = true)
-@Table(name = "t_products")
+@Table(name = "zf_products")
 @Entity
 @Data
 @Comment("商品信息")

@@ -24,11 +24,11 @@ public class UserHandler {
     public Token login(String username, String password) {
         return HandlerFactory.create()
                 .validator(UserValidatorFactory.create(username, password), context -> "用户信息格式不正确")
-                .executor(context -> context.set("user", userService.findByUsername(username)))
-                .validator(context -> context.get("user", User.class).validatePassword(password), context -> "用户名或密码不正确")
-                .executor(context -> context.set("token", new Token(config.getHeader(), JwtUtils.createToken(context.get("user", User.class)))))
+                .executor(context -> context.set(userService.findByUsername(username)))
+                .validator(context -> context.get(User.class).validatePassword(password), context -> "用户名或密码不正确")
+                .executor(context -> context.set(new Token(config.getHeader(), JwtUtils.createToken(context.get(User.class)))))
                 .execute()
-                .get("token", Token.class);
+                .get(Token.class);
     }
 
     public Token register(CreateUserCmd cmd) {
@@ -40,9 +40,9 @@ public class UserHandler {
                             .password(cmd.password())
                             .email(cmd.email())
                             .build());
-                    context.set("token", new Token(config.getHeader(), JwtUtils.createToken(user)));
+                    context.set(new Token(config.getHeader(), JwtUtils.createToken(user)));
                 })
                 .execute()
-                .get("token", Token.class);
+                .get(Token.class);
     }
 }

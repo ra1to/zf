@@ -4,7 +4,7 @@ spring:
   application:
     name: zf-demo
   profiles:
-    active: dev
+    active: @profileActive@
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
